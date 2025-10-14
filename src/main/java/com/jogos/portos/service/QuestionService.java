@@ -7,7 +7,6 @@ import com.jogos.portos.repository.QuestionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -23,8 +22,8 @@ public class QuestionService {
         this.playerRepository = playerRepository;
     }
 
-    private static final BigDecimal REWARD_CORRECT = new BigDecimal("20.00");
-    private static final BigDecimal PENALTY_WRONG = new BigDecimal("5.00");
+    private static final Double REWARD_CORRECT = 20.0;
+    private static final Double PENALTY_WRONG = 5.0;
 
     @Transactional(readOnly = true)
     public List<Question> findAll() {
@@ -46,19 +45,30 @@ public class QuestionService {
 
     @Transactional
     public boolean answerQuestion(Long playerId, Long questionId, String option) {
-        Question q = questionRepository.findById(questionId)
-                .orElseThrow(() -> new IllegalArgumentException("Pergunta não encontrada"));
-        Player p = playerRepository.findById(playerId)
-                .orElseThrow(() -> new IllegalArgumentException("Jogador não encontrado"));
+        try {
+            Question q = questionRepository.findById(questionId)
+                    .orElseThrow(() -> new IllegalArgumentException("Pergunta não encontrada"));
+            Player p = playerRepository.findById(playerId)
+                    .orElseThrow(() -> new IllegalArgumentException("Jogador não encontrado"));
 
-        boolean correct = q.getCorrectOption().equalsIgnoreCase(option);
-        if (correct) {
-            p.setMoney(p.getMoney().add(REWARD_CORRECT));
-        } else {
-            p.setMoney(p.getMoney().subtract(PENALTY_WRONG));
+            // Para compatibilidade com a estrutura antiga, vamos verificar se há resposta correta
+            boolean correct = false;
+            if (q.getRespostaCorreta() != null) {
+                correct = q.getRespostaCorreta().getLetra().equalsIgnoreCase(option);
+            }
+            
+            if (correct) {
+                p.setDinheiro(p.getDinheiro() + REWARD_CORRECT);
+            } else {
+                p.setDinheiro(p.getDinheiro() - PENALTY_WRONG);
+            }
+            playerRepository.save(p);
+            return correct;
+        } catch (Exception e) {
+            System.err.println("Erro ao responder pergunta: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-        playerRepository.save(p);
-        return correct;
     }
 }
 

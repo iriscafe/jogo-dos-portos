@@ -3,8 +3,6 @@ package com.jogos.portos.web;
 import com.jogos.portos.domain.Game;
 import com.jogos.portos.domain.Player;
 import com.jogos.portos.service.GameService;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,9 +20,9 @@ public class GameController {
     }
 
     @PostMapping
-    public ResponseEntity<Game> create(@RequestParam @Min(2) @Max(5) int maxPlayers) {
-        Game game = gameService.createGame(maxPlayers);
-        return ResponseEntity.created(URI.create("/api/games/" + game.getCode())).body(game);
+    public ResponseEntity<Game> create() {
+        Game game = gameService.createGame();
+        return ResponseEntity.created(URI.create("/api/games/" + game.getId())).body(game);
     }
 
     @GetMapping
@@ -32,25 +30,30 @@ public class GameController {
         return gameService.listGames();
     }
 
-    @PostMapping("/{code}/join")
-    public Player join(@PathVariable String code, @RequestBody Player player) {
-        return gameService.joinGame(code, player);
+    @GetMapping("/{id}")
+    public ResponseEntity<Game> getById(@PathVariable Long id) {
+        return gameService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/{code}/next-turn")
-    public Game nextTurn(@PathVariable String code) {
-        return gameService.nextTurn(code);
+    @PostMapping("/{id}/join")
+    public Player join(@PathVariable Long id, @RequestBody Player player) {
+        return gameService.joinGame(id, player);
     }
 
-    @PostMapping("/{code}/restart")
-    public Game restart(@PathVariable String code) {
-        return gameService.restart(code);
+    @PostMapping("/{id}/next-turn")
+    public Game nextTurn(@PathVariable Long id) {
+        return gameService.nextTurn(id);
     }
 
-    @PostMapping("/{code}/finish")
-    public Game finish(@PathVariable String code) {
-        return gameService.finish(code);
+    @PostMapping("/{id}/restart")
+    public Game restart(@PathVariable Long id) {
+        return gameService.restart(id);
+    }
+
+    @PostMapping("/{id}/finish")
+    public Game finish(@PathVariable Long id) {
+        return gameService.finish(id);
     }
 }
-
-

@@ -4,98 +4,82 @@ import com.jogos.portos.domain.Game;
 import com.jogos.portos.domain.Player;
 import com.jogos.portos.repository.GameRepository;
 import com.jogos.portos.repository.PlayerRepository;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 @Service
 public class GameService {
 
     private final GameRepository gameRepository;
     private final PlayerRepository playerRepository;
-    private final SimpMessagingTemplate messagingTemplate;
 
-    public GameService(GameRepository gameRepository, PlayerRepository playerRepository, SimpMessagingTemplate messagingTemplate) {
+    public GameService(GameRepository gameRepository, PlayerRepository playerRepository) {
         this.gameRepository = gameRepository;
         this.playerRepository = playerRepository;
-        this.messagingTemplate = messagingTemplate;
     }
 
-    private static final BigDecimal INCOME_PER_TURN = new BigDecimal("10.00");
+    private static final Double INCOME_PER_TURN = 10.0;
 
     @Transactional
-    public Game createGame(int maxPlayers) {
+    public Game createGame() {
         Game game = new Game();
-        game.setCode(generateCode());
-        game.setMaxPlayers(maxPlayers);
-        game.setCurrentTurn(1);
-        game.setFinished(false);
-        game.setCreatedAt(OffsetDateTime.now());
+        game.setStatus(com.jogos.portos.domain.GameStatus.CRIADO);
         return gameRepository.save(game);
     }
 
     @Transactional(readOnly = true)
-    public Optional<Game> findByCode(String code) {
-        return gameRepository.findByCode(code);
+    public Optional<Game> findById(Long id) {
+        return gameRepository.findById(id);
     }
 
     @Transactional
-    public Player joinGame(String code, Player player) {
-        Game game = gameRepository.findByCode(code)
+    public Player joinGame(Long gameId, Player player) {
+        Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("Partida não encontrada"));
-        if (game.getPlayers().size() >= game.getMaxPlayers()) {
+        if (game.getPlayers().size() >= 5) { // máximo 5 jogadores conforme diagrama
             throw new IllegalStateException("Partida cheia");
         }
         player.setGame(game);
-        if (player.getMoney() == null) {
-            player.setMoney(new BigDecimal("100.00"));
+        if (player.getDinheiro() == null) {
+            player.setDinheiro(100.0);
         }
         Player saved = playerRepository.save(player);
-        messagingTemplate.convertAndSend("/topic/game/" + code, "player_joined");
         return saved;
     }
 
     @Transactional
-    public Game nextTurn(String code) {
-        Game game = gameRepository.findByCode(code)
+    public Game nextTurn(Long gameId) {
+        Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("Partida não encontrada"));
         // renda automática por turno
         for (Player p : game.getPlayers()) {
-            p.setMoney(p.getMoney().add(INCOME_PER_TURN));
+            p.setDinheiro(p.getDinheiro() + INCOME_PER_TURN);
         }
-        game.setCurrentTurn(game.getCurrentTurn() + 1);
         Game saved = gameRepository.save(game);
-        messagingTemplate.convertAndSend("/topic/game/" + code, "next_turn");
         return saved;
     }
 
     @Transactional
-    public Game restart(String code) {
-        Game game = gameRepository.findByCode(code)
+    public Game restart(Long gameId) {
+        Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("Partida não encontrada"));
-        game.setCurrentTurn(1);
-        game.setFinished(false);
+        game.setStatus(com.jogos.portos.domain.GameStatus.CRIADO);
         for (Player p : game.getPlayers()) {
-            p.setMoney(new BigDecimal("100.00"));
+            p.setDinheiro(100.0);
         }
         Game saved = gameRepository.save(game);
-        messagingTemplate.convertAndSend("/topic/game/" + code, "restarted");
         return saved;
     }
 
     @Transactional
-    public Game finish(String code) {
-        Game game = gameRepository.findByCode(code)
+    public Game finish(Long gameId) {
+        Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("Partida não encontrada"));
-        game.setFinished(true);
+        game.setStatus(com.jogos.portos.domain.GameStatus.FINALIZADO);
         Game saved = gameRepository.save(game);
-        messagingTemplate.convertAndSend("/topic/game/" + code, "finished");
         return saved;
     }
 
@@ -103,16 +87,4 @@ public class GameService {
     public List<Game> listGames() {
         return gameRepository.findAll();
     }
-
-    private String generateCode() {
-        String alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        Random r = new Random();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 6; i++) {
-            sb.append(alphabet.charAt(r.nextInt(alphabet.length())));
-        }
-        return sb.toString();
-    }
 }
-
-

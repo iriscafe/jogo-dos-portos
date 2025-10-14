@@ -2,8 +2,6 @@ package com.jogos.portos.domain;
 
 import jakarta.persistence.*;
 
-import java.math.BigDecimal;
-
 @Entity
 @Table(name = "routes")
 public class Route {
@@ -11,31 +9,54 @@ public class Route {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String originPort;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "porto_origem_id")
+    private Port portoOrigem;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "porto_destino_id")
+    private Port portoDestino;
 
     @Column(nullable = false)
-    private String destinationPort;
+    private Double custo;
 
     @Column(nullable = false)
-    private BigDecimal price;
+    private Integer pontos;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id")
-    private Player owner;
+    @JoinColumn(name = "dono_id")
+    private Player dono;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cor_id")
+    private Color cor;
+
+    @ManyToOne
+    @JoinColumn(name = "game_id")
+    private Game game;
 
     public Route() {}
 
+    public void atribuirDono(Player jogador) {
+        this.dono = jogador;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public String getOriginPort() { return originPort; }
-    public void setOriginPort(String originPort) { this.originPort = originPort; }
-    public String getDestinationPort() { return destinationPort; }
-    public void setDestinationPort(String destinationPort) { this.destinationPort = destinationPort; }
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
-    public Player getOwner() { return owner; }
-    public void setOwner(Player owner) { this.owner = owner; }
+    public Port getPortoOrigem() { return portoOrigem; }
+    public void setPortoOrigem(Port portoOrigem) { this.portoOrigem = portoOrigem; }
+    public Port getPortoDestino() { return portoDestino; }
+    public void setPortoDestino(Port portoDestino) { this.portoDestino = portoDestino; }
+    public Double getCusto() { return custo; }
+    public void setCusto(Double custo) { this.custo = custo; }
+    public Integer getPontos() { return pontos; }
+    public void setPontos(Integer pontos) { this.pontos = pontos; }
+    public Player getDono() { return dono; }
+    public void setDono(Player dono) { this.dono = dono; }
+    public Color getCor() { return cor; }
+    public void setCor(Color cor) { this.cor = cor; }
+    public Game getGame() { return game; }
+    public void setGame(Game game) { this.game = game; }
 }
 
 

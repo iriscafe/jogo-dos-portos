@@ -4,6 +4,7 @@ import com.jogos.portos.domain.Route;
 import com.jogos.portos.service.RouteService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -14,6 +15,11 @@ public class RouteController {
 
     public RouteController(RouteService routeService) {
         this.routeService = routeService;
+    }
+
+    @GetMapping
+    public List<Route> list() {
+        return routeService.findAll();
     }
 
     @PostMapping("/buy")

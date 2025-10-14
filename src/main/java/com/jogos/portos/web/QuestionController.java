@@ -35,11 +35,13 @@ public class QuestionController {
                 .orElse(ResponseEntity.noContent().build());
     }
 
-    @PostMapping("/{id}/answer")
-    public Map<String, Object> answer(@PathVariable Long id,
-                                      @RequestParam Long playerId,
-                                      @RequestParam String option) {
-        boolean correct = questionService.answerQuestion(playerId, id, option);
+    @PostMapping("/answer")
+    public Map<String, Object> answer(@RequestBody Map<String, Object> request) {
+        Long playerId = Long.valueOf(request.get("playerId").toString());
+        Long questionId = Long.valueOf(request.get("questionId").toString());
+        String option = request.get("option").toString();
+        
+        boolean correct = questionService.answerQuestion(playerId, questionId, option);
         return Map.of("correct", correct);
     }
 }

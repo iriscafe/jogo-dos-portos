@@ -1,6 +1,9 @@
 package com.jogos.portos.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import java.util.List;
+import java.util.Random;
 
 @Entity
 @Table(name = "questions")
@@ -11,39 +14,64 @@ public class Question {
     private Long id;
 
     @Column(nullable = false, length = 500)
-    private String statement;
+    private String enunciado;
 
-    @Column(name = "option_a", nullable = false)
-    private String optionA;
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Alternative> alternativas;
 
-    @Column(name = "option_b", nullable = false)
-    private String optionB;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "resposta_correta_id")
+    private Alternative respostaCorreta;
 
-    @Column(name = "option_c", nullable = false)
-    private String optionC;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cor_id")
+    private Color cor;
 
-    @Column(name = "option_d", nullable = false)
-    private String optionD;
+    @ManyToOne
+    @JoinColumn(name = "banco_perguntas_id")
+    @JsonBackReference
+    private QuestionBank bancoPerguntas;
 
-    @Column(nullable = false)
-    private String correctOption; // A, B, C ou D
+    @ManyToOne
+    @JoinColumn(name = "game_id")
+    private Game game;
 
     public Question() {}
 
+    public boolean validarResposta(Alternative resposta) {
+        return this.respostaCorreta.equals(resposta);
+    }
+
+    public static Color sortearCor(List<Color> coresDisponiveis) {
+        if (coresDisponiveis == null || coresDisponiveis.isEmpty()) {
+            return null;
+        }
+        Random random = new Random();
+        return coresDisponiveis.get(random.nextInt(coresDisponiveis.size()));
+    }
+
+    public static Question sortearPergunta(List<Question> perguntasDisponiveis) {
+        if (perguntasDisponiveis == null || perguntasDisponiveis.isEmpty()) {
+            return null;
+        }
+        Random random = new Random();
+        return perguntasDisponiveis.get(random.nextInt(perguntasDisponiveis.size()));
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public String getStatement() { return statement; }
-    public void setStatement(String statement) { this.statement = statement; }
-    public String getOptionA() { return optionA; }
-    public void setOptionA(String optionA) { this.optionA = optionA; }
-    public String getOptionB() { return optionB; }
-    public void setOptionB(String optionB) { this.optionB = optionB; }
-    public String getOptionC() { return optionC; }
-    public void setOptionC(String optionC) { this.optionC = optionC; }
-    public String getOptionD() { return optionD; }
-    public void setOptionD(String optionD) { this.optionD = optionD; }
-    public String getCorrectOption() { return correctOption; }
-    public void setCorrectOption(String correctOption) { this.correctOption = correctOption; }
+    public String getEnunciado() { return enunciado; }
+    public void setEnunciado(String enunciado) { this.enunciado = enunciado; }
+    public List<Alternative> getAlternativas() { return alternativas; }
+    public void setAlternativas(List<Alternative> alternativas) { this.alternativas = alternativas; }
+    public Alternative getRespostaCorreta() { return respostaCorreta; }
+    public void setRespostaCorreta(Alternative respostaCorreta) { this.respostaCorreta = respostaCorreta; }
+    public Color getCor() { return cor; }
+    public void setCor(Color cor) { this.cor = cor; }
+    public QuestionBank getBancoPerguntas() { return bancoPerguntas; }
+    public void setBancoPerguntas(QuestionBank bancoPerguntas) { this.bancoPerguntas = bancoPerguntas; }
+    public Game getGame() { return game; }
+    public void setGame(Game game) { this.game = game; }
 }
 
 

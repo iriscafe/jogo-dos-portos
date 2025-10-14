@@ -7,7 +7,7 @@ import com.jogos.portos.repository.RouteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class RouteService {
@@ -20,15 +20,20 @@ public class RouteService {
         this.playerRepository = playerRepository;
     }
 
+    @Transactional(readOnly = true)
+    public List<Route> findAll() {
+        return routeRepository.findAll();
+    }
+
     @Transactional
     public Route buyRoute(Long playerId, Route route) {
         Player player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new IllegalArgumentException("Jogador não encontrado"));
-        if (player.getMoney().compareTo(route.getPrice()) < 0) {
+        if (player.getDinheiro() < route.getCusto()) {
             throw new IllegalStateException("Saldo insuficiente");
         }
-        route.setOwner(player);
-        player.setMoney(player.getMoney().subtract(route.getPrice()));
+        route.setDono(player);
+        player.setDinheiro(player.getDinheiro() - route.getCusto());
         playerRepository.save(player);
         return routeRepository.save(route);
     }
@@ -37,14 +42,14 @@ public class RouteService {
     public void sellRoute(Long playerId, Long routeId) {
         Route route = routeRepository.findById(routeId)
                 .orElseThrow(() -> new IllegalArgumentException("Rota não encontrada"));
-        if (route.getOwner() == null || !route.getOwner().getId().equals(playerId)) {
+        if (route.getDono() == null || !route.getDono().getId().equals(playerId)) {
             throw new IllegalStateException("Rota não pertence ao jogador");
         }
-        Player player = route.getOwner();
-        BigDecimal refund = route.getPrice();
-        route.setOwner(null);
+        Player player = route.getDono();
+        Double refund = route.getCusto();
+        route.setDono(null);
         routeRepository.save(route);
-        player.setMoney(player.getMoney().add(refund));
+        player.setDinheiro(player.getDinheiro() + refund);
         playerRepository.save(player);
     }
 }

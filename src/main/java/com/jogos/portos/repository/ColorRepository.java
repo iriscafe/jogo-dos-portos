@@ -1,11 +1,9 @@
 package com.jogos.portos.repository;
 
-import com.jogos.portos.domain.Game;
+import com.jogos.portos.domain.Color;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface GameRepository extends JpaRepository<Game, Long> {
+public interface ColorRepository extends JpaRepository<Color, Long> {
 }
-
-

@@ -19,8 +19,8 @@ public class Question {
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Alternative> alternativas;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "resposta_correta_id")
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "resposta_correta_id", nullable = true)
     private Alternative respostaCorreta;
 
     @ManyToOne(optional = false)

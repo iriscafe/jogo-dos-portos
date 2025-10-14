@@ -4,10 +4,13 @@ import com.jogos.portos.domain.Player;
 import com.jogos.portos.domain.Question;
 import com.jogos.portos.repository.PlayerRepository;
 import com.jogos.portos.repository.QuestionRepository;
+import com.jogos.portos.web.dto.WebSocketMessage;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -16,10 +19,12 @@ public class QuestionService {
 
     private final QuestionRepository questionRepository;
     private final PlayerRepository playerRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public QuestionService(QuestionRepository questionRepository, PlayerRepository playerRepository) {
+    public QuestionService(QuestionRepository questionRepository, PlayerRepository playerRepository, SimpMessagingTemplate messagingTemplate) {
         this.questionRepository = questionRepository;
         this.playerRepository = playerRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     private static final Double REWARD_CORRECT = 20.0;
@@ -44,25 +49,35 @@ public class QuestionService {
     }
 
     @Transactional
-    public boolean answerQuestion(Long playerId, Long questionId, String option) {
+    public boolean answerQuestion(Long playerId, Long questionId, Long alternativeId) {
         try {
             Question q = questionRepository.findById(questionId)
                     .orElseThrow(() -> new IllegalArgumentException("Pergunta não encontrada"));
             Player p = playerRepository.findById(playerId)
                     .orElseThrow(() -> new IllegalArgumentException("Jogador não encontrado"));
 
-            // Para compatibilidade com a estrutura antiga, vamos verificar se há resposta correta
-            boolean correct = false;
-            if (q.getRespostaCorreta() != null) {
-                correct = q.getRespostaCorreta().getLetra().equalsIgnoreCase(option);
-            }
-            
+            // Verificar se a alternativa escolhida é a correta
+            boolean correct = q.getRespostaCorreta().getId().equals(alternativeId);
+
             if (correct) {
                 p.setDinheiro(p.getDinheiro() + REWARD_CORRECT);
             } else {
                 p.setDinheiro(p.getDinheiro() - PENALTY_WRONG);
             }
             playerRepository.save(p);
+            
+            // Notificar via WebSocket sobre a resposta
+            if (p.getGame() != null) {
+                messagingTemplate.convertAndSend("/topic/game/" + p.getGame().getId(), 
+                    WebSocketMessage.questionAnswered(Map.of(
+                        "correct", correct,
+                        "playerId", playerId,
+                        "questionId", questionId,
+                        "alternativeId", alternativeId,
+                        "reward", correct ? REWARD_CORRECT : -PENALTY_WRONG
+                    ), p.getGame().getId(), playerId));
+            }
+            
             return correct;
         } catch (Exception e) {
             System.err.println("Erro ao responder pergunta: " + e.getMessage());

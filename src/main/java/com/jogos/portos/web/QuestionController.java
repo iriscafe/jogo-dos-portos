@@ -39,9 +39,9 @@ public class QuestionController {
     public Map<String, Object> answer(@RequestBody Map<String, Object> request) {
         Long playerId = Long.valueOf(request.get("playerId").toString());
         Long questionId = Long.valueOf(request.get("questionId").toString());
-        String option = request.get("option").toString();
+        Long alternativeId = Long.valueOf(request.get("alternativeId").toString());
         
-        boolean correct = questionService.answerQuestion(playerId, questionId, option);
+        boolean correct = questionService.answerQuestion(playerId, questionId, alternativeId);
         return Map.of("correct", correct);
     }
 }

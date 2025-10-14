@@ -28,6 +28,9 @@ public class Game {
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> perguntas = new ArrayList<>();
 
+    @Column(name = "current_turn_index")
+    private Integer currentTurnIndex = 0;
+
     public Game() {
         this.status = GameStatus.CRIADO;
     }
@@ -70,6 +73,19 @@ public class Game {
     public void setRotas(List<Route> rotas) { this.rotas = rotas; }
     public List<Question> getPerguntas() { return perguntas; }
     public void setPerguntas(List<Question> perguntas) { this.perguntas = perguntas; }
+    public Integer getCurrentTurnIndex() { return currentTurnIndex; }
+    public void setCurrentTurnIndex(Integer currentTurnIndex) { this.currentTurnIndex = currentTurnIndex; }
+    
+    public Player getCurrentPlayer() {
+        if (players.isEmpty()) return null;
+        return players.get(currentTurnIndex % players.size());
+    }
+    
+    public void nextTurn() {
+        if (!players.isEmpty()) {
+            currentTurnIndex = (currentTurnIndex + 1) % players.size();
+        }
+    }
 }
 
 

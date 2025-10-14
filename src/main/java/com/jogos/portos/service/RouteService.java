@@ -4,6 +4,8 @@ import com.jogos.portos.domain.Player;
 import com.jogos.portos.domain.Route;
 import com.jogos.portos.repository.PlayerRepository;
 import com.jogos.portos.repository.RouteRepository;
+import com.jogos.portos.web.dto.WebSocketMessage;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,10 +16,12 @@ public class RouteService {
 
     private final RouteRepository routeRepository;
     private final PlayerRepository playerRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public RouteService(RouteRepository routeRepository, PlayerRepository playerRepository) {
+    public RouteService(RouteRepository routeRepository, PlayerRepository playerRepository, SimpMessagingTemplate messagingTemplate) {
         this.routeRepository = routeRepository;
         this.playerRepository = playerRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Transactional(readOnly = true)
@@ -35,7 +39,15 @@ public class RouteService {
         route.setDono(player);
         player.setDinheiro(player.getDinheiro() - route.getCusto());
         playerRepository.save(player);
-        return routeRepository.save(route);
+        Route savedRoute = routeRepository.save(route);
+        
+        // Notificar via WebSocket que uma rota foi comprada
+        if (player.getGame() != null) {
+            messagingTemplate.convertAndSend("/topic/game/" + player.getGame().getId(), 
+                WebSocketMessage.routePurchased(savedRoute, player.getGame().getId(), playerId));
+        }
+        
+        return savedRoute;
     }
 
     @Transactional

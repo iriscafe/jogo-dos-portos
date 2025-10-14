@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste WebSocket - Jogo dos Portos</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .messages { height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: #f9f9f9; }
+        .message { margin: 5px 0; padding: 5px; background: white; border-radius: 3px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .info { background: #e3f2fd; color: #1565c0; }
+        button { margin: 5px; padding: 8px 15px; cursor: pointer; }
+        input, select { margin: 5px; padding: 5px; }
+        .status { font-weight: bold; }
+        .connected { color: green; }
+        .disconnected { color: red; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste WebSocket - Jogo dos Portos</h1>
+        
+        <div class="section">
+            <h3>🔌 Conexão WebSocket</h3>
+            <button onclick="connect()">Conectar</button>
+            <button onclick="disconnect()">Desconectar</button>
+            <span class="status" id="connectionStatus">Desconectado</span>
+        </div>
+
+        <div class="section">
+            <h3>🎮 Ações do Jogo</h3>
+            <div>
+                <label>Game ID:</label>
+                <input type="number" id="gameId" value="1" placeholder="ID do jogo">
+            </div>
+            <div>
+                <label>Player Name:</label>
+                <input type="text" id="playerName" value="Jogador Teste" placeholder="Nome do jogador">
+            </div>
+            <div>
+                <button onclick="joinGame()">Entrar no Jogo</button>
+                <button onclick="nextTurn()">Próximo Turno</button>
+                <button onclick="getRandomQuestion()">Nova Pergunta</button>
+                <button onclick="finishGame()">Finalizar Jogo</button>
+                <button onclick="restartGame()">Reiniciar Jogo</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>❓ Responder Pergunta</h3>
+            <div>
+                <label>Player ID:</label>
+                <input type="number" id="playerId" value="1" placeholder="ID do jogador">
+            </div>
+            <div>
+                <label>Question ID:</label>
+                <input type="number" id="questionId" value="1" placeholder="ID da pergunta">
+            </div>
+            <div>
+                <label>Alternative ID:</label>
+                <input type="number" id="alternativeId" value="1" placeholder="ID da alternativa">
+            </div>
+            <div>
+                <button onclick="answerQuestion()">Responder Pergunta</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>📨 Mensagens Recebidas</h3>
+            <div class="messages" id="messages"></div>
+            <button onclick="clearMessages()">Limpar Mensagens</button>
+        </div>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let connected = false;
+
+        function connect() {
+            console.log('Tentando conectar...');
+            addMessage('🔄 Tentando conectar ao WebSocket...', 'info');
+            
+            try {
+                const socket = new SockJS('http://localhost:8080/ws');
+                stompClient = Stomp.over(socket);
+                
+                // Configurar debug
+                stompClient.debug = function(str) {
+                    console.log('STOMP Debug:', str);
+                };
+                
+                stompClient.connect({}, function(frame) {
+                    connected = true;
+                    updateConnectionStatus('Conectado', 'connected');
+                    addMessage('✅ Conectado ao WebSocket!', 'success');
+                    console.log('Conectado:', frame);
+                    
+                    // Inscrever-se no canal geral de jogos
+                    stompClient.subscribe('/topic/game/1', function(message) {
+                        const data = JSON.parse(message.body);
+                        addMessage(`📨 Mensagem recebida: ${JSON.stringify(data, null, 2)}`, 'info');
+                        console.log('Mensagem recebida:', data);
+                    });
+                    
+                }, function(error) {
+                    connected = false;
+                    updateConnectionStatus('Erro na conexão', 'disconnected');
+                    addMessage(`❌ Erro na conexão: ${error}`, 'error');
+                    console.error('Erro de conexão:', error);
+                });
+                
+            } catch (error) {
+                connected = false;
+                updateConnectionStatus('Erro JavaScript', 'disconnected');
+                addMessage(`❌ Erro JavaScript: ${error.message}`, 'error');
+                console.error('Erro JavaScript:', error);
+            }
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            connected = false;
+            updateConnectionStatus('Desconectado', 'disconnected');
+            addMessage('🔌 Desconectado do WebSocket', 'info');
+        }
+
+        function updateConnectionStatus(status, className) {
+            const statusElement = document.getElementById('connectionStatus');
+            statusElement.textContent = status;
+            statusElement.className = `status ${className}`;
+        }
+
+        function addMessage(message, type = 'info') {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+        }
+
+        function sendMessage(endpoint, payload) {
+            if (!connected) {
+                addMessage('❌ Não conectado ao WebSocket!', 'error');
+                return;
+            }
+            
+            stompClient.send(endpoint, {}, JSON.stringify(payload));
+            addMessage(`📤 Enviado para ${endpoint}: ${JSON.stringify(payload)}`, 'info');
+        }
+
+        function joinGame() {
+            const gameId = document.getElementById('gameId').value;
+            const playerName = document.getElementById('playerName').value;
+            
+            sendMessage('/app/game/join', {
+                gameId: parseInt(gameId),
+                playerName: playerName
+            });
+        }
+
+        function nextTurn() {
+            const gameId = document.getElementById('gameId').value;
+            
+            sendMessage('/app/game/next-turn', {
+                gameId: parseInt(gameId)
+            });
+        }
+
+        function answerQuestion() {
+            const gameId = document.getElementById('gameId').value;
+            const playerId = document.getElementById('playerId').value;
+            const questionId = document.getElementById('questionId').value;
+            const alternativeId = document.getElementById('alternativeId').value;
+            
+            sendMessage('/app/game/answer-question', {
+                gameId: parseInt(gameId),
+                playerId: parseInt(playerId),
+                questionId: parseInt(questionId),
+                alternativeId: parseInt(alternativeId)
+            });
+        }
+
+        function getRandomQuestion() {
+            const gameId = document.getElementById('gameId').value;
+            
+            sendMessage('/app/game/get-random-question', {
+                gameId: parseInt(gameId)
+            });
+        }
+
+        function finishGame() {
+            const gameId = document.getElementById('gameId').value;
+            
+            sendMessage('/app/game/finish', {
+                gameId: parseInt(gameId)
+            });
+        }
+
+        function restartGame() {
+            const gameId = document.getElementById('gameId').value;
+            
+            sendMessage('/app/game/restart', {
+                gameId: parseInt(gameId)
+            });
+        }
+
+        // Conectar automaticamente ao carregar a página
+        window.onload = function() {
+            addMessage('🚀 Página carregada. Clique em "Conectar" para começar!', 'info');
+        };
+    </script>
+</body>
+</html>

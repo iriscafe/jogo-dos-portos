@@ -20,8 +20,6 @@ public class DataInitializer {
                                QuestionBankRepository questionBankRepository,
                                QuestionRepository questionRepository,
                                AlternativeRepository alternativeRepository,
-                               PortRepository portRepository,
-                               RouteRepository routeRepository,
                                JdbcTemplate jdbcTemplate) {
         return args -> {
             // Colors

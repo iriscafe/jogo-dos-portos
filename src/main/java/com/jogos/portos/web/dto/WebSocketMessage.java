@@ -21,7 +21,8 @@ public class WebSocketMessage {
     }
 
     public static WebSocketMessage playerJoined(Player player, Game game) {
-        return new WebSocketMessage("PLAYER_JOINED", player, "Player joined the game", game.getId(), player.getId());
+        // Enviar o Game completo para que o frontend possa atualizar a lista de jogadores
+        return new WebSocketMessage("PLAYER_JOINED", game, "Player joined the game", game.getId(), player.getId());
     }
 
     public static WebSocketMessage playerLeft(Long playerId, Long gameId) {

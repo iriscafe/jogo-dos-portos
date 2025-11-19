@@ -1,7 +1,9 @@
 package com.jogos.portos.service;
 
+import com.jogos.portos.domain.Game;
 import com.jogos.portos.domain.Player;
 import com.jogos.portos.domain.Question;
+import com.jogos.portos.repository.GameRepository;
 import com.jogos.portos.repository.PlayerRepository;
 import com.jogos.portos.repository.QuestionRepository;
 import com.jogos.portos.web.dto.WebSocketMessage;
@@ -20,11 +22,13 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
     private final PlayerRepository playerRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final GameRepository gameRepository;
 
-    public QuestionService(QuestionRepository questionRepository, PlayerRepository playerRepository, SimpMessagingTemplate messagingTemplate) {
+    public QuestionService(QuestionRepository questionRepository, PlayerRepository playerRepository, SimpMessagingTemplate messagingTemplate, GameRepository gameRepository) {
         this.questionRepository = questionRepository;
         this.playerRepository = playerRepository;
         this.messagingTemplate = messagingTemplate;
+        this.gameRepository = gameRepository;
     }
 
     private static final Double REWARD_CORRECT = 20.0;
@@ -68,14 +72,22 @@ public class QuestionService {
             
             // Notificar via WebSocket sobre a resposta
             if (p.getGame() != null) {
-                messagingTemplate.convertAndSend("/topic/game/" + p.getGame().getId(), 
+                Long gameId = p.getGame().getId();
+                messagingTemplate.convertAndSend("/topic/game/" + gameId, 
                     WebSocketMessage.questionAnswered(Map.of(
                         "correct", correct,
                         "playerId", playerId,
                         "questionId", questionId,
                         "alternativeId", alternativeId,
                         "reward", correct ? REWARD_CORRECT : -PENALTY_WRONG
-                    ), p.getGame().getId(), playerId));
+                    ), gameId, playerId));
+                
+                // Atualizar jogo completo para sincronizar dinheiro em tempo real
+                Game game = gameRepository.findById(gameId).orElse(null);
+                if (game != null) {
+                    messagingTemplate.convertAndSend("/topic/game/" + gameId, 
+                        WebSocketMessage.gameUpdate(game));
+                }
             }
             
             return correct;

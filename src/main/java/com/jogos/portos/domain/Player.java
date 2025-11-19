@@ -1,6 +1,7 @@
 package com.jogos.portos.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ public class Player {
     private List<Integer> tokensColoridos = new ArrayList<>();
 
     @OneToMany(mappedBy = "dono", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Route> rotasPossuidas = new ArrayList<>();
 
     public Player() {}

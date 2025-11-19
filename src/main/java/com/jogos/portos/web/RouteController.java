@@ -2,6 +2,7 @@ package com.jogos.portos.web;
 
 import com.jogos.portos.domain.Route;
 import com.jogos.portos.service.RouteService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,8 +24,17 @@ public class RouteController {
     }
 
     @PostMapping("/buy")
-    public Route buy(@RequestParam Long playerId, @RequestBody Route route) {
-        return routeService.buyRoute(playerId, route);
+    public ResponseEntity<?> buy(@RequestParam Long playerId, @RequestBody Route route) {
+        try {
+            Route boughtRoute = routeService.buyRoute(playerId, route);
+            return ResponseEntity.ok(boughtRoute);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Erro ao comprar rota: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/{routeId}/sell")

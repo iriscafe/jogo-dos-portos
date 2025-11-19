@@ -186,6 +186,18 @@ body {
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
+/* Navios nas rotas (como trens no Ticket to Ride) */
+.ship-on-route {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    z-index: 5;
+    pointer-events: none;
+}
+
 .btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;

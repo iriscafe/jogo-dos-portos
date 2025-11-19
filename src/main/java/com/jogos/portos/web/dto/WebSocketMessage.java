@@ -45,6 +45,10 @@ public class WebSocketMessage {
         return new WebSocketMessage("GAME_FINISHED", game, "Game finished", game.getId(), null);
     }
 
+    public static WebSocketMessage gameFinishedWithResult(Object resultadoFinal, Long gameId) {
+        return new WebSocketMessage("GAME_FINISHED", resultadoFinal, "Game finished with results", gameId, null);
+    }
+
     public static WebSocketMessage error(String message, Long gameId) {
         return new WebSocketMessage("ERROR", null, message, gameId, null);
     }

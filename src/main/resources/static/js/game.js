@@ -11,6 +11,10 @@ const GameActions = {
             Notifications.success('Nova partida criada! ID: ' + data.id);
             UI.updateGameStatus('Partida criada - Aguardando jogadores');
             
+            // Resetar rotas para garantir que não apareçam rotas de partidas anteriores
+            GameState.gameRoutes = [];
+            Routes.updateVisual();
+            
             const gameIdInput = document.getElementById('gameId');
             if (gameIdInput) {
                 gameIdInput.value = data.id;
@@ -29,6 +33,18 @@ const GameActions = {
     },
     
     joinGame() {
+        // Prevenir múltiplas chamadas
+        if (GameState.isJoining) {
+            Notifications.warning('Aguarde, entrando na partida...');
+            return;
+        }
+        
+        // Se já está em um jogo, não permitir entrar novamente
+        if (GameState.currentPlayerId) {
+            Notifications.warning('Você já está em uma partida!');
+            return;
+        }
+        
         const playerNameInput = document.getElementById('playerName');
         const gameIdInput = document.getElementById('gameId');
         
@@ -42,6 +58,9 @@ const GameActions = {
             return;
         }
 
+        // Marcar que está entrando
+        GameState.isJoining = true;
+        
         // Salvar o nome do jogador para identificação posterior
         GameState.expectedPlayerName = playerName;
         
@@ -52,15 +71,30 @@ const GameActions = {
         
         GameState.currentGameId = parseInt(gameId);
         WebSocketManager.subscribeToGame(GameState.currentGameId);
-        UI.updateGameControls(true, !!GameState.currentPlayerId);
+        UI.updateGameControls(true, false); // Ainda não temos playerId
 
         if (!success) {
-            // Fallback via REST
+            // Fallback via REST se WebSocket não está conectado
             this.joinGameRest(gameId, playerName);
+        } else {
+            // Se WebSocket funcionou, aguardar identificação por até 2 segundos
+            // Se não identificar, usar REST como fallback
+            setTimeout(() => {
+                if (!GameState.currentPlayerId) {
+                    console.log('WebSocket não identificou jogador, tentando REST...');
+                    this.joinGameRest(gameId, playerName);
+                }
+            }, 2000);
         }
     },
     
     joinGameRest(gameId, playerName) {
+        // Se já temos um playerId, não tentar novamente
+        if (GameState.currentPlayerId) {
+            console.log('Já temos playerId, não tentando REST novamente');
+            return;
+        }
+        
         // Salvar o nome do jogador para identificação posterior
         GameState.expectedPlayerName = playerName;
         
@@ -69,14 +103,31 @@ const GameActions = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: playerName })
         })
-        .then(r => {
-            if (!r.ok) throw new Error('Falha ao entrar na partida');
+        .then(async r => {
+            if (!r.ok) {
+                let errorMessage = 'Falha ao entrar na partida';
+                try {
+                    const errorData = await r.json();
+                    errorMessage = errorData.error || errorMessage;
+                } catch (e) {
+                    const text = await r.text();
+                    errorMessage = text || errorMessage;
+                }
+                throw new Error(errorMessage);
+            }
             return r.json();
         })
         .then(player => {
+            // Verificar novamente se já temos playerId (pode ter sido identificado via WebSocket)
+            if (GameState.currentPlayerId) {
+                console.log('Jogador já identificado, ignorando resposta REST');
+                return;
+            }
+            
             GameState.currentGameId = parseInt(gameId);
             GameState.currentPlayerId = player.id;
             GameState.expectedPlayerName = null; // Limpar após identificação
+            GameState.isJoining = false; // Resetar flag
             UI.updateGameControls(true, true);
             Notifications.success('Você entrou na partida!');
             Routes.loadGameRoutes();
@@ -88,8 +139,11 @@ const GameActions = {
             }
         })
         .catch(err => {
-            console.error(err);
-            Notifications.error('Não foi possível entrar na partida');
+            console.error('Erro ao entrar via REST:', err);
+            GameState.isJoining = false;
+            GameState.expectedPlayerName = null;
+            const errorMsg = err.message || 'Não foi possível entrar na partida';
+            Notifications.error(errorMsg);
         });
     },
     
@@ -128,31 +182,21 @@ const GameActions = {
                         GameState.currentPlayers = game.players;
                         UI.updatePlayerList(game.players);
                         
-                        // Se ainda não temos currentPlayerId, tentar identificar pelo nome
-                        if (!GameState.currentPlayerId) {
-                            // Usar expectedPlayerName primeiro (mais confiável)
+                        // Se ainda não temos currentPlayerId E estamos esperando entrar, tentar identificar pelo nome esperado
+                        if (!GameState.currentPlayerId && GameState.expectedPlayerName) {
                             const expectedName = GameState.expectedPlayerName;
-                            const playerNameToMatch = expectedName || 
-                                (() => {
-                                    const playerNameInput = document.getElementById('playerName');
-                                    return playerNameInput ? playerNameInput.value.trim() : null;
-                                })();
-                            
-                            if (playerNameToMatch) {
-                                const player = game.players.find(p => 
-                                    p.name && p.name.trim().toLowerCase() === playerNameToMatch.trim().toLowerCase()
-                                );
-                                if (player) {
-                                    GameState.currentPlayerId = player.id;
-                                    console.log('✅ Jogador identificado via refreshGameData:', player.name, 'ID:', player.id);
-                                    if (expectedName) {
-                                        GameState.expectedPlayerName = null; // Limpar após identificação
-                                    }
-                                    // Atualizar controles agora que o jogador foi identificado
-                                    UI.updateGameControls(!!GameState.currentGameId, !!GameState.currentPlayerId);
-                                    Ships.init();
-                                    Ships.updateAllPortsVisual();
-                                }
+                            const player = game.players.find(p => 
+                                p.name && p.name.trim().toLowerCase() === expectedName.trim().toLowerCase()
+                            );
+                            if (player) {
+                                GameState.currentPlayerId = player.id;
+                                console.log('✅ Jogador identificado via refreshGameData:', player.name, 'ID:', player.id);
+                                GameState.expectedPlayerName = null; // Limpar após identificação
+                                GameState.isJoining = false; // Resetar flag
+                                // Atualizar controles agora que o jogador foi identificado
+                                UI.updateGameControls(!!GameState.currentGameId, !!GameState.currentPlayerId);
+                                Ships.init();
+                                Ships.updateAllPortsVisual();
                             }
                         }
                     }
@@ -160,12 +204,85 @@ const GameActions = {
                         GameState.gameRoutes = game.rotas;
                         Routes.updateVisual();
                     }
-                    UI.updateGameStatus(game.status, game.players);
+                    // Preservar winnerInfo se o jogo estiver finalizado
+                    const winnerInfo = (game.status === 'FINALIZADO' && GameState.winnerInfo) ? GameState.winnerInfo : null;
+                    UI.updateGameStatus(game.status, game.players, winnerInfo);
                     // Garantir que os controles estejam atualizados
                     UI.updateGameControls(!!GameState.currentGameId, !!GameState.currentPlayerId);
                 }
             })
             .catch(() => {});
+    },
+    
+    buyShips() {
+        if (!GameState.currentPlayerId) {
+            Notifications.error('Entre em uma partida primeiro');
+            return;
+        }
+
+        if (!GameState.isMyTurn()) {
+            Notifications.error('Não é seu turno! Aguarde sua vez.');
+            return;
+        }
+
+        const currentPlayer = GameState.getCurrentPlayer();
+        if (!currentPlayer) {
+            Notifications.error('Erro ao buscar informações do jogador');
+            return;
+        }
+
+        // Pedir quantidade de navios para comprar
+        const quantidadeStr = prompt(`Quantos navios deseja comprar?\nPreço: $10 por navio\nVocê tem: $${currentPlayer.dinheiro?.toFixed(0) || 0}\nNavios disponíveis: ${currentPlayer.naviosDisponiveis || 0}`);
+        
+        if (!quantidadeStr) {
+            return; // Usuário cancelou
+        }
+
+        const quantidade = parseInt(quantidadeStr);
+        
+        if (isNaN(quantidade) || quantidade <= 0) {
+            Notifications.error('Quantidade inválida');
+            return;
+        }
+
+        const custoTotal = quantidade * 10;
+        
+        if (currentPlayer.dinheiro < custoTotal) {
+            Notifications.error(`Dinheiro insuficiente! Você precisa de $${custoTotal} mas tem apenas $${currentPlayer.dinheiro?.toFixed(0) || 0}`);
+            return;
+        }
+
+        // Confirmar compra
+        if (!confirm(`Comprar ${quantidade} navio(s) por $${custoTotal}?`)) {
+            return;
+        }
+
+        fetch(`/api/games/players/${GameState.currentPlayerId}/buy-ships?quantidade=${quantidade}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(async response => {
+            if (!response.ok) {
+                let errorMessage = 'Erro ao comprar navios';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                } catch (e) {
+                    const text = await response.text();
+                    errorMessage = text || errorMessage;
+                }
+                throw new Error(errorMessage);
+            }
+            return response.json();
+        })
+        .then(player => {
+            Notifications.success(`${quantidade} navio(s) comprado(s) com sucesso! -$${custoTotal}`);
+            GameActions.refreshGameData();
+        })
+        .catch(error => {
+            console.error('Erro ao comprar navios:', error);
+            Notifications.error(error.message || 'Erro ao comprar navios. Tente novamente.');
+        });
     }
 };
 
@@ -188,5 +305,9 @@ function restartGame() {
 
 function finishGame() {
     GameActions.finishGame();
+}
+
+function buyShips() {
+    GameActions.buyShips();
 }
 

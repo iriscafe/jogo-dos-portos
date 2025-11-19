@@ -1,5 +1,6 @@
 package com.jogos.portos.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +17,11 @@ public class Port {
     private String cidade;
 
     @OneToMany(mappedBy = "portoOrigem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Route> rotasOrigem = new ArrayList<>();
 
     @OneToMany(mappedBy = "portoDestino", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Route> rotasDestino = new ArrayList<>();
 
     public Port() {}

@@ -5,10 +5,12 @@ Sistema completo de jogo de tabuleiro competitivo que combina estratégia de aqu
 ## 🎮 Visão Geral
 
 O **Jogo dos Portos** é uma aplicação web completa que permite que 2-5 jogadores participem de partidas estratégicas onde:
-- Os jogadores competem por rotas marítimas
+- Os jogadores competem por rotas marítimas entre portos
 - Respondem perguntas de conhecimento geral para ganhar dinheiro
 - Gerenciam recursos (dinheiro, navios, rotas)
+- Compram navios adicionais durante o jogo
 - Alternam turnos de forma organizada
+- O vencedor é determinado por pontos (soma dos pontos das rotas compradas)
 
 ## 🛠️ Tecnologias
 
@@ -26,12 +28,11 @@ O **Jogo dos Portos** é uma aplicação web completa que permite que 2-5 jogado
 - **SockJS + STOMP** - Cliente WebSocket
 - **Font Awesome** - Ícones
 - **Design responsivo** - Funciona em desktop e mobile
+- **Página de Regras** - Documentação completa das regras do jogo
 
 ### DevOps
 - **Docker Compose** - Containerização completa
 - **MySQL Container** - Banco de dados containerizado
-
-
 
 ## 🚀 Execução Rápida
 
@@ -46,15 +47,52 @@ docker compose up -d --build
 
 # Acessar o jogo
 open http://localhost:8080
+
+# Acessar as regras
+open http://localhost:8080/regras.html
 ```
+
+## 📖 Regras do Jogo
+
+O jogo possui uma página completa de regras acessível através do link "Regras do Jogo" na interface ou diretamente em `/regras.html`. As regras incluem:
+- Objetivo do jogo e critérios de vitória
+- Como jogar (3 ações por turno: comprar rota, comprar navios, responder pergunta)
+- Sistema de pontos e desempate
+- Dicas estratégicas
+- Informações sobre navios e rotas
+
 ## 🔧 APIs Disponíveis
 
 ### REST Endpoints
-- **Games**: `/api/games` - Gerenciamento de partidas
-- **Players**: `/api/players` - Controle de jogadores  
-- **Questions**: `/api/questions` - Banco de perguntas
-- **Routes**: `/api/routes` - Sistema de rotas
-- **Users**: `/api/users` - Gerenciamento de usuários
+
+#### Games (`/api/games`)
+
+- `POST /api/games` - Criar nova partida
+- `GET /api/games` - Listar todas as partidas
+- `GET /api/games/{id}` - Obter partida por ID
+- `POST /api/games/{id}/join` - Entrar em uma partida
+- `POST /api/games/{id}/next-turn` - Avançar turno
+- `POST /api/games/{id}/restart` - Reiniciar partida
+- `POST /api/games/{id}/finish` - Finalizar partida
+- `POST /api/games/players/{playerId}/buy-ships?quantidade={qtd}` - Comprar navios
+
+#### Routes (`/api/routes`)
+
+- `GET /api/routes` - Listar todas as rotas
+- `POST /api/routes/buy?playerId={id}` - Comprar uma rota
+- `POST /api/routes/{routeId}/sell?playerId={id}` - Vender uma rota
+
+#### Players (`/api/players`)
+
+- Controle de jogadores
+
+#### Questions (`/api/questions`)
+
+- Banco de perguntas de múltipla escolha
+
+#### Colors (`/api/colors`)
+
+- Gerenciamento de cores dos jogadores
 
 ### Documentação Interativa
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
@@ -80,6 +118,8 @@ A aplicação utiliza **WebSockets com STOMP** para comunicação em tempo real 
 - `/app/game/finish` - Finalizar jogo
 - `/app/game/restart` - Reiniciar jogo
 - `/app/game/get-random-question` - Obter pergunta aleatória
+- `/app/game/buy-route` - Comprar uma rota
+- `/app/game/buy-ships` - Comprar navios
 
 #### Mensagens de Saída (Server → Client)
 - `/topic/game/{gameId}` - Canal específico do jogo
@@ -112,46 +152,119 @@ A aplicação utiliza **WebSockets com STOMP** para comunicação em tempo real 
 ## 🏗️ Arquitetura do Sistema
 
 ### Backend (Spring Boot)
+
 ```
 src/main/java/com/jogos/portos/
 ├── domain/           # Entidades JPA
 │   ├── Game.java     # Partida com controle de turnos
-│   ├── Player.java   # Jogador com recursos
+│   ├── Player.java   # Jogador com recursos (dinheiro, navios, pontos)
 │   ├── Question.java # Perguntas com alternativas
-│   └── Route.java    # Rotas marítimas
+│   ├── Route.java    # Rotas marítimas entre portos
+│   ├── Port.java     # Portos do mapa
+│   ├── Color.java    # Cores dos jogadores
+│   └── GameStatus.java # Status do jogo (CRIADO, EM_ANDAMENTO, FINALIZADO)
 ├── repository/        # Repositórios JPA
+│   ├── GameRepository.java
+│   ├── PlayerRepository.java
+│   ├── RouteRepository.java
+│   ├── PortRepository.java
+│   └── ColorRepository.java
 ├── service/          # Lógica de negócio
-│   ├── GameService.java      # Gerenciamento de partidas
+│   ├── GameService.java      # Gerenciamento de partidas e compra de navios
 │   ├── QuestionService.java  # Sistema de perguntas
-│   └── RouteService.java     # Sistema de rotas
+│   ├── RouteService.java     # Sistema de rotas (compra/venda)
+│   └── PortService.java      # Gerenciamento de portos
 ├── web/              # Controllers REST + WebSocket
-│   ├── GameController.java      # API REST
+│   ├── GameController.java      # API REST de partidas
+│   ├── RouteController.java     # API REST de rotas
 │   ├── WebSocketController.java # WebSocket handlers
 │   └── dto/                     # DTOs para comunicação
+│       └── WebSocketMessage.java
 └── DataInitializer.java # População inicial do banco
+```
+
+### Frontend (JavaScript Modular)
+
+```
+src/main/resources/static/
+├── index.html          # Página principal do jogo
+├── regras.html         # Página de regras do jogo
+├── css/
+│   ├── styles.css      # Estilos principais
+│   └── regras.css      # Estilos da página de regras
+└── js/
+    ├── app.js          # Inicialização da aplicação
+    ├── state.js        # Gerenciamento de estado do jogo
+    ├── websocket.js    # Conexão WebSocket
+    ├── messageHandler.js # Processamento de mensagens WebSocket
+    ├── game.js         # Ações do jogo (criar, entrar, turnos)
+    ├── board.js        # Renderização do tabuleiro
+    ├── routes.js       # Gerenciamento de rotas (compra, visualização)
+    ├── ships.js        # Visualização de navios nas rotas
+    ├── questions.js    # Sistema de perguntas
+    ├── ui.js           # Atualização da interface do usuário
+    └── notifications.js # Sistema de notificações
 ```
 
 ## 🎯 Funcionalidades Técnicas
 
 ### Sistema de Turnos
+
 - **Controle Backend**: `Game.currentTurnIndex` gerencia turnos
 - **Sincronização**: Frontend recebe `currentTurnIndex` via WebSocket
 - **Indicadores Visuais**: "SEU TURNO" vs "Aguardando"
+- **Ações por Turno**: Cada jogador pode realizar 1 das 3 ações:
+  1. Comprar uma rota
+  2. Comprar navios
+  3. Responder uma pergunta
+
+### Sistema de Portos e Rotas
+
+- **Portos**: Entidades que representam cidades portuárias no mapa
+- **Rotas**: Conexões entre portos com custo, pontos e cor
+- **Relacionamentos**: Cada rota conecta um porto de origem a um porto de destino
+- **Visualização**: Mapa interativo mostra portos e rotas com cores dos jogadores
 
 ### Sistema de Recursos
-- **Dinheiro**: Ganha $20 por resposta correta, perde $5 por erro
-- **Renda Automática**: $10 por turno para todos os jogadores
-- **Navios**: Controle de frota disponível
-- **Rotas**: Sistema de aquisição de rotas marítimas
+
+- **Dinheiro**: 
+  - Ganha $20 por resposta correta
+  - Perde $5 por resposta errada
+  - Renda automática de $10 por turno para todos os jogadores
+- **Navios**: 
+  - Início: 6 navios por jogador
+  - Necessários para comprar rotas (número de navios = pontos da rota)
+  - Podem ser comprados durante o turno por $10 cada
+  - Navios são consumidos ao comprar rotas
+- **Rotas**: 
+  - Sistema de aquisição de rotas marítimas entre portos
+  - Cada rota tem custo em dinheiro e requer navios (igual aos pontos)
+  - Rotas dão pontos ao jogador (baseado no valor da rota)
+  - Cada rota só pode ser comprada por um jogador
+- **Pontos**: 
+  - Soma dos pontos de todas as rotas compradas
+  - Determinam o vencedor ao final do jogo
+  - Em caso de empate, o jogador com mais dinheiro vence
 
 ### Comunicação em Tempo Real
+
 - **WebSocket STOMP**: Comunicação bidirecional
 - **Fallback REST**: APIs REST como backup
 - **Sincronização**: Estado consistente entre todos os jogadores
+- **Atualizações em tempo real**: Compra de rotas, navios, respostas de perguntas e mudanças de turno são sincronizadas instantaneamente
+
+### Sistema de Vitória
+
+- **Critério Principal**: Jogador com mais pontos (soma dos pontos das rotas compradas)
+- **Desempate**: Em caso de empate em pontos, o jogador com mais dinheiro vence
+- **Empate Total**: Se pontos e dinheiro forem iguais, há empate
+- **Finalização Automática**: O jogo finaliza automaticamente quando todas as rotas são compradas
+- **Finalização Manual**: Qualquer jogador pode finalizar o jogo clicando em "Finalizar"
 
 ## 🚀 Deploy
 
 ### Docker Compose (Produção)
+
 ```bash
 # Build e deploy
 docker compose up -d --build
@@ -164,6 +277,7 @@ docker compose down
 ```
 
 ### Variáveis de Ambiente
+
 ```bash
 # Banco de dados
 MYSQL_HOST=mysql

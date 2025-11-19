@@ -11,53 +11,9 @@ const Ships = {
     },
     
     selectPort(port) {
-        if (!GameState.currentPlayerId) {
-            Notifications.error('Entre em uma partida primeiro');
-            return;
-        }
-
-        if (!GameState.isMyTurn()) {
-            Notifications.error('Não é seu turno! Aguarde sua vez.');
-            return;
-        }
-
-        const currentPlayer = GameState.getCurrentPlayer();
-        if (!currentPlayer) {
-            Notifications.error('Erro ao buscar informações do jogador');
-            return;
-        }
-
-        // Se não há porto selecionado, seleciona como origem
-        if (!this.selectedPort) {
-            const shipsAtPort = this.getShipsAtPort(port.id, GameState.currentPlayerId);
-            
-            if (shipsAtPort === 0) {
-                // Tentar colocar um navio disponível no porto
-                if (currentPlayer.naviosDisponiveis > 0) {
-                    this.placeShip(port);
-                } else {
-                    Notifications.error('Você não tem navios disponíveis!');
-                }
-            } else {
-                // Selecionar porto de origem
-                this.selectedPort = port;
-                Board.highlightPort(port.id, true);
-                Notifications.info(`Porto de origem selecionado: ${port.name}. Clique em outro porto para mover o navio.`);
-            }
-            return;
-        }
-
-        // Se já há porto selecionado, tenta mover navio
-        if (this.selectedPort.id === port.id) {
-            // Desselecionar
-            Board.highlightPort(port.id, false);
-            this.selectedPort = null;
-            Notifications.info('Seleção cancelada');
-            return;
-        }
-
-        // Tentar mover navio
-        this.moveShip(this.selectedPort, port);
+        // Navios agora funcionam como trens no Ticket to Ride - são colocados nas rotas, não movidos entre portos
+        // Esta funcionalidade foi desabilitada
+        Notifications.info('Navios são colocados automaticamente nas rotas quando você as compra');
     },
     
     placeShip(port) {

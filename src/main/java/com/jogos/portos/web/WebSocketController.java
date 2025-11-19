@@ -7,7 +7,6 @@ import com.jogos.portos.service.GameService;
 import com.jogos.portos.service.QuestionService;
 import com.jogos.portos.web.dto.WebSocketMessage;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
@@ -102,13 +101,12 @@ public class WebSocketController {
         try {
             Long gameId = Long.valueOf(payload.get("gameId").toString());
             
+            // O GameService.finish() já envia a notificação WebSocket com o resultado completo
+            // Não precisamos enviar novamente aqui para evitar mensagens duplicadas
             Game game = gameService.finish(gameId);
             
-            // Notificar todos os jogadores que o jogo terminou
-            messagingTemplate.convertAndSend("/topic/game/" + gameId, 
-                WebSocketMessage.gameFinished(game));
-            
-            return WebSocketMessage.gameFinished(game);
+            // Retornar apenas uma mensagem de confirmação para o remetente
+            return WebSocketMessage.gameUpdate(game);
         } catch (Exception e) {
             return WebSocketMessage.error("Error finishing game: " + e.getMessage(), null);
         }

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regras do Jogo dos Portos</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="css/regras.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-anchor"></i> Regras do Jogo dos Portos</h1>
+            <p>Estratégia naval com conhecimento geral</p>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-info-circle"></i> Objetivo do Jogo</h2>
+            <p>O objetivo é ser o jogador com mais <strong>pontos</strong> ao final da partida. Os pontos são obtidos comprando rotas marítimas entre os portos.</p>
+            <div class="highlight">
+                <strong>🏆 Vencedor:</strong> O jogador com mais pontos vence. Em caso de empate em pontos, o jogador com mais dinheiro vence. Se pontos e dinheiro forem iguais, há empate.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-play-circle"></i> Como Jogar</h2>
+            
+            <p style="margin-bottom: 20px; font-size: 1.05rem;">No seu turno você pode fazer <strong>1 das 3 ações</strong> abaixo:</p>
+
+            <div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #667eea;">
+                <h4 style="font-size: 1.15rem; color: #2d3748; margin-bottom: 12px; font-weight: 600;">1. Comprar uma Rota</h4>
+                <p style="margin-bottom: 10px;">Escolha uma rota disponível entre dois portos no mapa.</p>
+                <p style="margin-bottom: 10px;">Para comprar uma rota você precisa:</p>
+                <ul style="margin-left: 20px; margin-bottom: 10px;">
+                    <li>Ter <strong>dinheiro suficiente</strong> para pagar o custo da rota</li>
+                    <li>Ter <strong>navios suficientes</strong> (número de navios = pontos da rota)</li>
+                </ul>
+                <p style="margin-bottom: 0;"><strong>Quando você compra:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 5px;">
+                    <li>Coloca seus navios na rota (visíveis no mapa)</li>
+                    <li>Ganha <strong>pontos na hora</strong> (rotas maiores dão mais pontos)</li>
+                    <li>Gasta dinheiro e navios</li>
+                </ul>
+            </div>
+
+            <div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #667eea;">
+                <h4 style="font-size: 1.15rem; color: #2d3748; margin-bottom: 12px; font-weight: 600;">2. Comprar Navios</h4>
+                <p style="margin-bottom: 10px;">Durante seu turno, você pode comprar navios adicionais clicando em "Comprar Navios".</p>
+                <p style="margin-bottom: 10px;">Cada navio custa <strong>$10</strong>.</p>
+                <p style="margin-bottom: 0;">Você pode comprar quantos navios quiser, desde que tenha dinheiro suficiente. Os navios comprados são adicionados aos seus navios disponíveis, permitindo que você compre mais rotas no futuro.</p>
+            </div>
+
+            <div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #667eea;">
+                <h4 style="font-size: 1.15rem; color: #2d3748; margin-bottom: 12px; font-weight: 600;">3. Responder uma Pergunta</h4>
+                <p style="margin-bottom: 10px;">Clique em "Nova Pergunta" para receber uma pergunta de múltipla escolha sobre conhecimento geral.</p>
+                <p style="margin-bottom: 0;"><strong>Resposta correta:</strong> Ganha <strong>+$20</strong> | <strong>Resposta errada:</strong> Perde <strong>-$5</strong></p>
+                <p style="margin-top: 10px; margin-bottom: 0;">Use as perguntas para ganhar dinheiro e comprar mais rotas ou navios!</p>
+            </div>
+
+            <div style="background: #ebf8ff; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3182ce;">
+                <p style="margin-bottom: 8px;"><strong>💡 Dica:</strong> Ao avançar o turno (botão "Próximo Turno"), todos os jogadores recebem <strong>+$10</strong> automaticamente como renda por turno.</p>
+            </div>
+
+            <h3 style="font-size: 1.3rem; color: #2d3748; margin-top: 30px; margin-bottom: 15px; font-weight: 600;">Como funciona o fim do jogo?</h3>
+            <p style="margin-bottom: 15px;">O jogo acaba quando:</p>
+            <ul style="margin-left: 20px; margin-bottom: 15px;">
+                <li><strong>Todas as rotas forem compradas</strong>, ou</li>
+                <li>Alguém clicar no botão <strong>"Finalizar"</strong></li>
+            </ul>
+            <p style="margin-bottom: 0;"><strong>Vence quem tiver mais pontos no final do jogo.</strong> Em caso de empate em pontos, o jogador com mais dinheiro vence. Se pontos e dinheiro forem iguais, há empate.</p>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-trophy trophy"></i> Critérios de Vitória</h2>
+            <ol style="list-style: decimal; padding-left: 30px; color: #4a5568;">
+                <li style="margin-bottom: 10px;"><strong>Pontos:</strong> Soma dos pontos de todas as rotas que você comprou</li>
+                <li style="margin-bottom: 10px;"><strong>Desempate por Dinheiro:</strong> Se houver empate em pontos, o jogador com mais dinheiro vence</li>
+                <li style="margin-bottom: 10px;"><strong>Empate Total:</strong> Se pontos e dinheiro forem iguais, há empate entre os jogadores</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-lightbulb"></i> Dicas Estratégicas</h2>
+            <ul>
+                <li>Gerencie seus recursos: você começa com apenas 6 navios, então escolha bem quais rotas comprar ou compre mais navios quando necessário</li>
+                <li>Rotas com mais pontos requerem mais navios, mas valem mais no final</li>
+                <li>Responda perguntas corretamente para ganhar dinheiro e comprar mais rotas ou navios</li>
+                <li>Fique de olho no dinheiro dos outros jogadores - pode ser importante no desempate!</li>
+                <li>Compre rotas estratégicas que bloqueiem outros jogadores</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-ship"></i> Sobre os Navios</h2>
+            <p>Os navios funcionam como os trens no Ticket to Ride:</p>
+            <ul>
+                <li>Ao comprar uma rota, você coloca navios nela (número de navios = pontos da rota)</li>
+                <li>Os navios são um recurso limitado - quando acabarem, você não pode comprar mais rotas</li>
+                <li>Os navios aparecem visualmente nas rotas que você comprou</li>
+                <li>Cada rota só pode ser comprada por um jogador</li>
+            </ul>
+            <div class="highlight">
+                <strong>💡 Dica:</strong> Se você ficar sem navios, pode comprar mais durante seu turno! Cada navio custa $10. Isso permite que você continue comprando rotas mesmo depois de usar todos os navios iniciais.
+            </div>
+        </div>
+
+        <div class="back-link">
+            <a href="index.html">
+                <i class="fas fa-arrow-left"></i> Voltar ao Jogo
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+

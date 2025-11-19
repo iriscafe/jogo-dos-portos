@@ -1,5 +1,6 @@
 package com.jogos.portos.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -33,6 +34,7 @@ public class Route {
 
     @ManyToOne
     @JoinColumn(name = "game_id")
+    @JsonBackReference
     private Game game;
 
     public Route() {}

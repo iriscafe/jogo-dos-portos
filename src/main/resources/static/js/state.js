@@ -10,6 +10,7 @@ const GameState = {
     currentTurnIndex: 0,
     currentPlayers: [],
     expectedPlayerName: null, // Nome do jogador que esta sessão espera identificar
+    isJoining: false, // Flag para prevenir múltiplas chamadas de join
     
     // Perguntas
     selectedAlternative: null,
@@ -23,6 +24,9 @@ const GameState = {
     
     // Navios
     selectedPortForShip: null,
+    
+    // Vencedor (armazenado quando o jogo finaliza)
+    winnerInfo: null,
     
     // Métodos auxiliares
     isMyTurn() {

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/games")
@@ -38,8 +39,17 @@ public class GameController {
     }
 
     @PostMapping("/{id}/join")
-    public Player join(@PathVariable Long id, @RequestBody Player player) {
-        return gameService.joinGame(id, player);
+    public ResponseEntity<?> join(@PathVariable Long id, @RequestBody Player player) {
+        try {
+            Player joinedPlayer = gameService.joinGame(id, player);
+            return ResponseEntity.ok(joinedPlayer);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Erro ao entrar na partida: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/{id}/next-turn")
@@ -55,5 +65,19 @@ public class GameController {
     @PostMapping("/{id}/finish")
     public Game finish(@PathVariable Long id) {
         return gameService.finish(id);
+    }
+
+    @PostMapping("/players/{playerId}/buy-ships")
+    public ResponseEntity<?> buyShips(@PathVariable Long playerId, @RequestParam Integer quantidade) {
+        try {
+            Player player = gameService.buyShips(playerId, quantidade);
+            return ResponseEntity.ok(player);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Erro ao comprar navios: " + e.getMessage()));
+        }
     }
 }

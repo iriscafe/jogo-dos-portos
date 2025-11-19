@@ -107,7 +107,6 @@ public class DataInitializer {
                 questionBankRepository.save(bank);
             }
 
-            // Questions with alternatives
             if (questionRepository.count() == 0) {
                 QuestionBank bank = questionBankRepository.findAll().get(0);
                 Color azul = colorRepository.findAll().stream().filter(c -> "Azul".equals(c.getNome())).findFirst().orElse(null);
@@ -116,7 +115,6 @@ public class DataInitializer {
                 Color amarelo = colorRepository.findAll().stream().filter(c -> "Amarelo".equals(c.getNome())).findFirst().orElse(null);
                 Color roxo = colorRepository.findAll().stream().filter(c -> "Roxo".equals(c.getNome())).findFirst().orElse(null);
 
-                // Helper to create question + alternatives
                 createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
                         "Qual é a capital do Brasil?", azul, bank,
                         new String[]{"São Paulo","Brasília","Rio de Janeiro","Salvador"},
@@ -140,6 +138,160 @@ public class DataInitializer {
                 createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
                         "Qual cidade é conhecida como \"Cidade Luz\"?", roxo, bank,
                         new String[]{"Londres","Paris","Roma","Madrid"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual é o maior porto da Europa em volume de carga?", azul, bank,
+                        new String[]{"Hamburgo","Roterdã","Antuérpia","Marselha"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Em qual país está localizado o porto de Hamburgo?", azul, bank,
+                        new String[]{"Bélgica","Alemanha","Países Baixos","Dinamarca"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual canal conecta o Mar Mediterrâneo ao Mar Vermelho?", azul, bank,
+                        new String[]{"Canal do Panamá","Canal de Suez","Canal de Kiel","Canal de Corinto"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual é o principal porto do Brasil em volume de carga?", azul, bank,
+                        new String[]{"Rio de Janeiro","Santos","Paranaguá","Suape"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual oceano banha a costa oeste da Europa?", azul, bank,
+                        new String[]{"Pacífico","Atlântico","Índico","Ártico"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual cidade portuária é a capital da Grécia?", azul, bank,
+                        new String[]{"Pireu","Atenas","Salonica","Patras"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                // Perguntas VERMELHO (6 novas)
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual país possui o porto de Antuérpia?", vermelho, bank,
+                        new String[]{"Países Baixos","Bélgica","França","Alemanha"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual é o maior porto da França?", vermelho, bank,
+                        new String[]{"Le Havre","Marselha","Dunkerque","Calais"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Em qual mar está localizado o porto de Barcelona?", vermelho, bank,
+                        new String[]{"Mar Adriático","Mar Mediterrâneo","Mar Negro","Mar Egeu"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual é o principal porto da Espanha?", vermelho, bank,
+                        new String[]{"Valência","Barcelona","Algeciras","Bilbao"},
+                        new String[]{"A","B","C","D"}, "C");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual cidade portuária italiana é conhecida como berço de Cristóvão Colombo?", vermelho, bank,
+                        new String[]{"Roma","Gênova","Veneza","Nápoles"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual é o maior porto do Mar Mediterrâneo?", vermelho, bank,
+                        new String[]{"Marselha","Valência","Pireu","Gênova"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                // Perguntas VERDE (6 novas)
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual país possui o porto de Pireu?", verde, bank,
+                        new String[]{"Itália","Grécia","Turquia","Chipre"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual cidade portuária é a capital da Turquia?", verde, bank,
+                        new String[]{"Istambul","Ancara","Izmir","Antália"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual é o maior porto da Turquia?", verde, bank,
+                        new String[]{"Ancara","Istambul","Izmir","Mersin"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual mar separa a Europa da Ásia em Istambul?", verde, bank,
+                        new String[]{"Mar Mediterrâneo","Mar Negro","Mar de Mármara","Mar Egeu"},
+                        new String[]{"A","B","C","D"}, "C");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual é o principal porto da Itália em volume de carga?", verde, bank,
+                        new String[]{"Gênova","Nápoles","Trieste","La Spezia"},
+                        new String[]{"A","B","C","D"}, "A");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual cidade portuária grega é famosa por suas ruínas antigas?", verde, bank,
+                        new String[]{"Pireu","Atenas","Salonica","Patras"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                // Perguntas AMARELO (6 novas)
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual é o maior porto do mundo em volume de carga?", amarelo, bank,
+                        new String[]{"Xangai","Singapura","Roterdã","Los Angeles"},
+                        new String[]{"A","B","C","D"}, "A");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual país possui o maior número de portos importantes na Europa?", amarelo, bank,
+                        new String[]{"França","Alemanha","Itália","Espanha"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual é a principal função de um porto?", amarelo, bank,
+                        new String[]{"Turismo","Comércio e transporte","Pesca","Recreação"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual cidade portuária portuguesa é a capital do país?", amarelo, bank,
+                        new String[]{"Porto","Lisboa","Setúbal","Aveiro"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual é o maior porto da África?", amarelo, bank,
+                        new String[]{"Cidade do Cabo","Durban","Port Said","Tanger"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual instrumento é essencial para navegação marítima?", amarelo, bank,
+                        new String[]{"Bússola","Telescópio","Binóculo","Rádio"},
+                        new String[]{"A","B","C","D"}, "A");
+
+                // Perguntas ROXO (6 novas)
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual é o menor oceano do mundo?", roxo, bank,
+                        new String[]{"Atlântico","Pacífico","Índico","Ártico"},
+                        new String[]{"A","B","C","D"}, "D");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual cidade portuária é conhecida como \"Pérola do Mediterrâneo\"?", roxo, bank,
+                        new String[]{"Barcelona","Marselha","Nápoles","Valência"},
+                        new String[]{"A","B","C","D"}, "C");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual é o principal tipo de carga transportada em portos?", roxo, bank,
+                        new String[]{"Passageiros","Contêineres","Petróleo","Carga geral"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual país possui o porto de Lisboa?", roxo, bank,
+                        new String[]{"Espanha","Portugal","França","Itália"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual é o nome do estreito que conecta o Mar Mediterrâneo ao Oceano Atlântico?", roxo, bank,
+                        new String[]{"Estreito de Bósforo","Estreito de Gibraltar","Estreito de Dardanelos","Canal da Mancha"},
+                        new String[]{"A","B","C","D"}, "B");
+
+                createQuestionWithAlternatives(questionRepository, alternativeRepository, jdbcTemplate,
+                        "Qual cidade portuária italiana é famosa por seus canais?", roxo, bank,
+                        new String[]{"Roma","Veneza","Gênova","Nápoles"},
                         new String[]{"A","B","C","D"}, "B");
             }
         };
@@ -187,9 +339,8 @@ public class DataInitializer {
                 correctId = savedAlt.getId();
             }
         }
-        alternativeRepository.flush(); // força persistência das alternativas
+        alternativeRepository.flush(); 
         
-        // Atualiza resposta correta via SQL direto (evita problemas de referência)
         if (correctId != null) {
             jdbcTemplate.update("UPDATE questions SET resposta_correta_id = ? WHERE id = ?", 
                                correctId, saved.getId());

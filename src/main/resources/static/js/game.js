@@ -212,77 +212,6 @@ const GameActions = {
                 }
             })
             .catch(() => {});
-    },
-    
-    buyShips() {
-        if (!GameState.currentPlayerId) {
-            Notifications.error('Entre em uma partida primeiro');
-            return;
-        }
-
-        if (!GameState.isMyTurn()) {
-            Notifications.error('Não é seu turno! Aguarde sua vez.');
-            return;
-        }
-
-        const currentPlayer = GameState.getCurrentPlayer();
-        if (!currentPlayer) {
-            Notifications.error('Erro ao buscar informações do jogador');
-            return;
-        }
-
-        // Pedir quantidade de navios para comprar
-        const quantidadeStr = prompt(`Quantos navios deseja comprar?\nPreço: $10 por navio\nVocê tem: $${currentPlayer.dinheiro?.toFixed(0) || 0}\nNavios disponíveis: ${currentPlayer.naviosDisponiveis || 0}`);
-        
-        if (!quantidadeStr) {
-            return; // Usuário cancelou
-        }
-
-        const quantidade = parseInt(quantidadeStr);
-        
-        if (isNaN(quantidade) || quantidade <= 0) {
-            Notifications.error('Quantidade inválida');
-            return;
-        }
-
-        const custoTotal = quantidade * 10;
-        
-        if (currentPlayer.dinheiro < custoTotal) {
-            Notifications.error(`Dinheiro insuficiente! Você precisa de $${custoTotal} mas tem apenas $${currentPlayer.dinheiro?.toFixed(0) || 0}`);
-            return;
-        }
-
-        // Confirmar compra
-        if (!confirm(`Comprar ${quantidade} navio(s) por $${custoTotal}?`)) {
-            return;
-        }
-
-        fetch(`/api/games/players/${GameState.currentPlayerId}/buy-ships?quantidade=${quantidade}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        })
-        .then(async response => {
-            if (!response.ok) {
-                let errorMessage = 'Erro ao comprar navios';
-                try {
-                    const errorData = await response.json();
-                    errorMessage = errorData.error || errorMessage;
-                } catch (e) {
-                    const text = await response.text();
-                    errorMessage = text || errorMessage;
-                }
-                throw new Error(errorMessage);
-            }
-            return response.json();
-        })
-        .then(player => {
-            Notifications.success(`${quantidade} navio(s) comprado(s) com sucesso! -$${custoTotal}`);
-            GameActions.refreshGameData();
-        })
-        .catch(error => {
-            console.error('Erro ao comprar navios:', error);
-            Notifications.error(error.message || 'Erro ao comprar navios. Tente novamente.');
-        });
     }
 };
 
@@ -305,9 +234,5 @@ function restartGame() {
 
 function finishGame() {
     GameActions.finishGame();
-}
-
-function buyShips() {
-    GameActions.buyShips();
 }
 

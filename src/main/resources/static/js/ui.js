@@ -151,13 +151,11 @@ const UI = {
     
     updateGameControls(hasGame, isPlayer) {
         const questionBtn = document.getElementById('questionBtn');
-        const buyShipsBtn = document.getElementById('buyShipsBtn');
         const nextTurnBtn = document.getElementById('nextTurnBtn');
         const restartBtn = document.getElementById('restartBtn');
         const finishBtn = document.getElementById('finishBtn');
         
         if (questionBtn) questionBtn.disabled = !hasGame || !isPlayer;
-        if (buyShipsBtn) buyShipsBtn.disabled = !hasGame || !isPlayer;
         if (nextTurnBtn) nextTurnBtn.disabled = !hasGame || !isPlayer;
         if (restartBtn) restartBtn.disabled = !hasGame || !isPlayer;
         if (finishBtn) finishBtn.disabled = !hasGame || !isPlayer;

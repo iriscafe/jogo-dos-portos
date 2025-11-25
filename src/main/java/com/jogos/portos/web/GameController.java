@@ -66,18 +66,4 @@ public class GameController {
     public Game finish(@PathVariable Long id) {
         return gameService.finish(id);
     }
-
-    @PostMapping("/players/{playerId}/buy-ships")
-    public ResponseEntity<?> buyShips(@PathVariable Long playerId, @RequestParam Integer quantidade) {
-        try {
-            Player player = gameService.buyShips(playerId, quantidade);
-            return ResponseEntity.ok(player);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Erro ao comprar navios: " + e.getMessage()));
-        }
-    }
 }

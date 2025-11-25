@@ -41,7 +41,6 @@ public class GameService {
     private static final Double INCOME_PER_TURN = 10.0;
     private static final Double DEFAULT_START_MONEY = 50.0;
     private static final Integer DEFAULT_SHIPS = 6;
-    private static final Double SHIP_PRICE = 10.0; // Preço fixo por navio
 
     @Transactional
     public Game createGame() {
@@ -393,37 +392,5 @@ public class GameService {
     @Transactional(readOnly = true)
     public List<Game> listGames() {
         return gameRepository.findAll();
-    }
-
-    @Transactional
-    public Player buyShips(Long playerId, Integer quantidade) {
-        Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new IllegalArgumentException("Jogador não encontrado"));
-        
-        if (quantidade <= 0) {
-            throw new IllegalArgumentException("Quantidade deve ser maior que zero");
-        }
-        
-        Double custoTotal = quantidade * SHIP_PRICE;
-        
-        if (player.getDinheiro() < custoTotal) {
-            throw new IllegalStateException("Dinheiro insuficiente. Você precisa de $" + String.format("%.0f", custoTotal) + " mas tem apenas $" + String.format("%.0f", player.getDinheiro()));
-        }
-        
-        player.setDinheiro(player.getDinheiro() - custoTotal);
-        player.setNaviosDisponiveis(player.getNaviosDisponiveis() + quantidade);
-        Player saved = playerRepository.save(player);
-        
-        // Atualizar jogo completo via WebSocket para sincronizar em tempo real
-        if (player.getGame() != null) {
-            Long gameId = player.getGame().getId();
-            Game game = findById(gameId).orElse(null);
-            if (game != null) {
-                messagingTemplate.convertAndSend("/topic/game/" + gameId, 
-                    WebSocketMessage.gameUpdate(game));
-            }
-        }
-        
-        return saved;
     }
 }

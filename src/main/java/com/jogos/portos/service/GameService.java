@@ -40,12 +40,10 @@ public class GameService {
 
     private static final Double INCOME_PER_TURN = 10.0;
     private static final Double DEFAULT_START_MONEY = 50.0;
-    private static final Integer DEFAULT_SHIPS = 6;
+    private static final Integer DEFAULT_SHIPS = 45;
 
     @Transactional
     public Game createGame() {
-        // Resetar todas as rotas base (sem game_id) antes de criar nova partida
-        // Isso garante que rotas de partidas anteriores não apareçam como compradas
         List<Route> baseRoutes = routeRepository.findAll().stream()
                 .filter(route -> route.getGame() == null && route.getDono() != null)
                 .collect(Collectors.toList());
@@ -65,16 +63,13 @@ public class GameService {
         Optional<Game> gameOpt = gameRepository.findById(id);
         if (gameOpt.isPresent()) {
             Game game = gameOpt.get();
-            // Forçar carregamento das rotas existentes
             game.getRotas().size(); // Isso força o carregamento lazy
             
-            // Se o jogo não tiver rotas associadas, incluir as rotas base (sem game_id)
             if (game.getRotas().isEmpty()) {
                 List<Route> baseRoutes = routeRepository.findAll().stream()
                         .filter(route -> route.getGame() == null)
                         .collect(Collectors.toList());
                 
-                // Forçar carregamento dos portos e cores das rotas base
                 for (Route route : baseRoutes) {
                     if (route.getPortoOrigem() != null) {
                         route.getPortoOrigem().getId(); // Força carregamento
@@ -90,12 +85,10 @@ public class GameService {
                     }
                 }
                 
-                // Forçar carregamento do dono das rotas base
                 for (Route route : baseRoutes) {
                     if (route.getDono() != null) {
                         route.getDono().getId();
                         route.getDono().getName();
-                        // Forçar carregamento da cor do dono
                         if (route.getDono().getCor() != null) {
                             route.getDono().getCor().getId();
                             route.getDono().getCor().getNome();
@@ -103,10 +96,8 @@ public class GameService {
                     }
                 }
                 
-                // Adicionar as rotas base à lista do jogo (apenas em memória, não persiste)
                 game.getRotas().addAll(baseRoutes);
             } else {
-                // Forçar carregamento dos portos das rotas existentes
                 for (Route route : game.getRotas()) {
                     if (route.getPortoOrigem() != null) {
                         route.getPortoOrigem().getId();

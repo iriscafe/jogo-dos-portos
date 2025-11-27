@@ -15,6 +15,7 @@ O **Jogo dos Portos** é uma aplicação web completa que permite que 2-5 jogado
 ## 🛠️ Tecnologias
 
 ### Backend
+
 - **Spring Boot 3.5.6** - Framework principal
 - **Java 17** - Linguagem de programação
 - **Maven** - Gerenciamento de dependências
@@ -24,22 +25,21 @@ O **Jogo dos Portos** é uma aplicação web completa que permite que 2-5 jogado
 - **Swagger/OpenAPI** - Documentação da API
 
 ### Frontend
+
 - **HTML5/CSS3/JavaScript** - Interface web responsiva
 - **SockJS + STOMP** - Cliente WebSocket
 - **Font Awesome** - Ícones
 - **Design responsivo** - Funciona em desktop e mobile
 - **Página de Regras** - Documentação completa das regras do jogo
 
-### DevOps
-- **Docker Compose** - Containerização completa
-- **MySQL Container** - Banco de dados containerizado
 
-## 🚀 Execução Rápida
+## 🚀 Execução 
 
-### Opção 1: Docker Compose (Recomendado)
+### Docker Compose
+
 ```bash
 # Clone o repositório
-git clone <repository-url>
+git clone https://github.com/iriscafe/jogo-dos-portos
 cd jogo-dos-portos
 
 # Subir banco MySQL e aplicação
@@ -93,61 +93,6 @@ O jogo possui uma página completa de regras acessível através do link "Regras
 #### Colors (`/api/colors`)
 
 - Gerenciamento de cores dos jogadores
-
-### Documentação Interativa
-- **Swagger UI**: http://localhost:8080/swagger-ui.html
-- **OpenAPI JSON**: http://localhost:8080/v3/api-docs
-
-## 🔌 WebSocket - Comunicação em Tempo Real
-
-A aplicação utiliza **WebSockets com STOMP** para comunicação em tempo real entre os jogadores, permitindo uma experiência de interação dinâmica e sincronizada.
-
-### ⚙️ Configuração WebSocket
-
-- **Endpoint STOMP**: `/ws`
-- **Broker**: `/topic`
-- **Prefixo de aplicação**: `/app`
-- **Biblioteca Frontend**: `@stomp/stompjs` + `sockjs-client`
-
-### 📡 Endpoints WebSocket Disponíveis
-
-#### Mensagens de Entrada (Client → Server)
-- `/app/game/join` - Entrar em um jogo
-- `/app/game/next-turn` - Avançar turno
-- `/app/game/answer-question` - Responder pergunta
-- `/app/game/finish` - Finalizar jogo
-- `/app/game/restart` - Reiniciar jogo
-- `/app/game/get-random-question` - Obter pergunta aleatória
-- `/app/game/buy-route` - Comprar uma rota
-- `/app/game/buy-ships` - Comprar navios
-
-#### Mensagens de Saída (Server → Client)
-- `/topic/game/{gameId}` - Canal específico do jogo
-
-### 📨 Tipos de Mensagens WebSocket
-
-1. **GAME_UPDATE** - Estado do jogo atualizado
-2. **PLAYER_JOINED** - Jogador entrou no jogo
-3. **PLAYER_LEFT** - Jogador saiu do jogo
-4. **TURN_CHANGED** - Turno mudou (inclui currentTurnIndex)
-5. **ROUTE_PURCHASED** - Rota foi comprada
-6. **QUESTION_ANSWERED** - Pergunta foi respondida
-7. **GAME_FINISHED** - Jogo foi finalizado
-8. **NEW_QUESTION** - Nova pergunta disponível
-9. **ERROR** - Erro ocorreu
-
-## 🧪 Testes
-
-```bash
-# Executar todos os testes
-./mvnw test
-
-# Executar com perfil de teste (H2)
-./mvnw -Dspring-boot.run.profiles=test test
-
-# Executar testes específicos
-./mvnw test -Dtest=GameServiceTest
-```
 
 ## 🏗️ Arquitetura do Sistema
 
@@ -261,22 +206,7 @@ src/main/resources/static/
 - **Finalização Automática**: O jogo finaliza automaticamente quando todas as rotas são compradas
 - **Finalização Manual**: Qualquer jogador pode finalizar o jogo clicando em "Finalizar"
 
-## 🚀 Deploy
-
-### Docker Compose (Produção)
-
-```bash
-# Build e deploy
-docker compose up -d --build
-
-# Logs
-docker compose logs -f jogo-dos-portos
-
-# Parar
-docker compose down
-```
-
-### Variáveis de Ambiente
+### Variáveis de Ambiente para desenvolvimento
 
 ```bash
 # Banco de dados
